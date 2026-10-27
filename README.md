@@ -1,5 +1,12 @@
 # Create Event Form
 
+## Image picker configuration
+
+Expo Go includes the image picker. Native development and production builds use
+the `expo-image-picker` plugin in `app.json` to set the iOS photo-permission
+message: "Allow photo access to add an image to your event." Rebuild the native
+app after changing this configuration; restarting Metro does not apply it.
+
 ## Validation
 
 Run the TypeScript check at the end of every implementation step:

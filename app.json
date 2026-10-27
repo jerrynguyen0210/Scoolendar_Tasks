@@ -6,6 +6,14 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow photo access to add an image to your event."
+        }
+      ]
+    ],
     "ios": {
       "supportsTablet": true
     },
