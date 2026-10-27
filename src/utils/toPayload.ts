@@ -7,5 +7,9 @@ export function toPayload(values: EventFormValues): EventPayload {
     return { ...shared, privacy, communities };
   }
 
-  return { ...shared, privacy, invites };
+  return {
+    ...shared,
+    privacy,
+    invites: invites.map((email) => email.trim().toLowerCase()),
+  };
 }

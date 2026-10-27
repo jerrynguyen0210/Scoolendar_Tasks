@@ -1,18 +1,14 @@
+import type { z } from "zod";
+import type { eventSchema, imageSchema } from "../validation/schema";
+
 export type Privacy = "public" | "private";
 
-export type EventImage = {
-  uri: string;
-  mimeType?: string;
-  fileName?: string | null;
-};
+export type EventImage = z.infer<typeof imageSchema>;
 
 export type Community = {
   id: string;
   name: string;
 };
-
-import type { z } from "zod";
-import type { eventSchema } from "../validation/schema";
 
 export type EventFormInput = z.input<typeof eventSchema>;
 export type EventFormValues = z.infer<typeof eventSchema>;

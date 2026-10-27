@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { eventSchema } from "../src/validation/schema.ts";
+import { toPayload } from "../src/utils/toPayload.ts";
 
 const valid = {
   image: { uri: "file:///photo.jpg", mimeType: "image/jpeg" },
@@ -58,4 +59,69 @@ assert.equal(vietnamese.success, false);
 assert.ok(vietnamese.error.issues.some(({ path, message }) =>
   path[0] === "shortDescription" && message === "Short description must be in English"));
 
-console.log("\nAll four expectations passed.");
+for (const lineBreak of ["\n", "\r", "\r\n"]) {
+  const multiline = check(`Multiline descriptions (${JSON.stringify(lineBreak)})`, {
+    ...valid,
+    shortDescription: `Join our picnic.${lineBreak}Everyone is welcome!`,
+    longDescription: `Bring your family for a picnic.${lineBreak}Meet us in the local park.`,
+  });
+  assert.equal(multiline.success, true);
+}
+
+const tab = check("Short description with an internal tab", {
+  ...valid,
+  shortDescription: "Join our\tpicnic today.",
+});
+assert.equal(tab.success, false);
+assert.ok(tab.error.issues.some(({ path, message }) =>
+  path[0] === "shortDescription" && message === "Short description must be in English"));
+
+const paddedEmail = check("Private with padded, mixed-case emails", {
+  ...valid,
+  privacy: "private",
+  invites: [" a@b.com", "Guest@Example.COM ", "  Other@Example.COM  "],
+});
+assert.equal(paddedEmail.success, true);
+const originalInvites = [...paddedEmail.data.invites];
+assert.deepEqual(toPayload(paddedEmail.data).invites,
+  ["a@b.com", "guest@example.com", "other@example.com"]);
+assert.deepEqual(paddedEmail.data.invites, originalInvites);
+assert.equal(Object.hasOwn(toPayload(publicEvent.data), "invites"), false);
+
+for (const email of ["   ", " invalid-email ", " a @b.com "]) {
+  const invalidEmail = check("Private with invalid email", {
+    ...valid,
+    privacy: "private",
+    invites: [email],
+  });
+  assert.equal(invalidEmail.success, false);
+  assert.deepEqual(invalidEmail.error.issues[0].path, ["invites", 0]);
+}
+
+const duplicates = ["Guest@Example.com", " guest@example.COM ", "other@example.com", "guest@example.com"];
+const duplicateResult = check("Private with duplicate emails", {
+  ...valid,
+  privacy: "private",
+  invites: duplicates,
+});
+assert.equal(duplicateResult.success, false);
+assert.deepEqual(duplicateResult.error.issues.map(({ path }) => path),
+  [["invites", 1], ["invites", 3]]);
+assert.ok(duplicateResult.error.issues.every(({ message }) =>
+  message === "This email has already been invited"));
+assert.equal(eventSchema.safeParse({ ...valid, invites: duplicates }).success, true);
+assert.equal(eventSchema.safeParse({
+  ...valid,
+  privacy: "private",
+  invites: ["one@example.com", "two@example.com"],
+}).success, true);
+
+const emptyUri = check("Image with an empty URI", {
+  ...valid,
+  image: { uri: "" },
+});
+assert.equal(emptyUri.success, false);
+assert.deepEqual(emptyUri.error.issues[0].path, ["image", "uri"]);
+assert.equal(emptyUri.error.issues[0].message, "Image URI is required");
+
+console.log("\nAll validation and payload expectations passed.");
