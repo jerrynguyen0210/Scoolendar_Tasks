@@ -7,6 +7,15 @@ the `expo-image-picker` plugin in `app.json` to set the iOS photo-permission
 message: "Allow photo access to add an image to your event." Rebuild the native
 app after changing this configuration; restarting Metro does not apply it.
 
+The picker uses `quality: 0.8` to request compression on Android and iOS,
+balancing image quality and file size for future uploads. This is not a file-size
+limit and does not guarantee a smaller file; iOS ignores it for PNG and BMP
+images. The form currently stores the image URI and metadata, not image bytes.
+
+The form intentionally uses `mode: 'onChange'` for immediate feedback. Tapping
+Remove sets the image to `null` and immediately shows "Please add an image",
+because an event image is required.
+
 ## Validation
 
 Run the TypeScript check at the end of every implementation step:
