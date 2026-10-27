@@ -1,1 +1,73 @@
-export {};
+import { z } from "zod";
+
+export const TITLE_MIN_LENGTH = 3;
+export const TITLE_MAX_LENGTH = 80;
+export const SHORT_DESCRIPTION_MIN_LENGTH = 10;
+export const SHORT_DESCRIPTION_MAX_LENGTH = 200;
+export const LONG_DESCRIPTION_MIN_LENGTH = 20;
+export const LONG_DESCRIPTION_MAX_LENGTH = 2000;
+export const MIN_INVITES = 1;
+export const MAX_INVITES = 20;
+
+const emailSchema = z.email();
+
+const imageSchema = z.object({
+  uri: z.string(),
+  mimeType: z.string().startsWith("image/", "Please choose an image file").optional(),
+  fileName: z.string().nullable().optional(),
+});
+
+const privacySchema = z.enum(["public", "private"], {
+  error: "Choose public or private",
+});
+
+export const eventSchema = z.object({
+  image: imageSchema.nullable().transform((image, ctx) => {
+    if (image === null) {
+      ctx.addIssue({ code: "custom", message: "Please add an image" });
+      return z.NEVER;
+    }
+    return image;
+  }),
+  title: z.string().trim()
+    .min(TITLE_MIN_LENGTH, `Title must be at least ${TITLE_MIN_LENGTH} characters`)
+    .max(TITLE_MAX_LENGTH, `Title must be at most ${TITLE_MAX_LENGTH} characters`),
+  shortDescription: z.string().trim()
+    .min(SHORT_DESCRIPTION_MIN_LENGTH, `Short description must be at least ${SHORT_DESCRIPTION_MIN_LENGTH} characters`)
+    .max(SHORT_DESCRIPTION_MAX_LENGTH, `Short description must be at most ${SHORT_DESCRIPTION_MAX_LENGTH} characters`)
+    .regex(/^[\x20-\x7E]*$/, "Short description must be in English"),
+  longDescription: z.string().trim()
+    .min(LONG_DESCRIPTION_MIN_LENGTH, `Long description must be at least ${LONG_DESCRIPTION_MIN_LENGTH} characters`)
+    .max(LONG_DESCRIPTION_MAX_LENGTH, `Long description must be at most ${LONG_DESCRIPTION_MAX_LENGTH} characters`),
+  privacy: privacySchema.optional().pipe(privacySchema),
+  communities: z.array(z.string()),
+  invites: z.array(z.string()),
+}).superRefine((values, ctx) => {
+  if (values.privacy !== "private") return;
+
+  if (values.invites.length < MIN_INVITES) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["invites"],
+      message: `Invite at least ${MIN_INVITES} person to a private event`,
+    });
+  }
+
+  if (values.invites.length > MAX_INVITES) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["invites"],
+      message: `Invite at most ${MAX_INVITES} people`,
+    });
+  }
+
+  values.invites.forEach((email, index) => {
+    if (!emailSchema.safeParse(email).success) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["invites", index],
+        message: "Enter a valid email address",
+      });
+    }
+  });
+});
