@@ -12,7 +12,12 @@ balancing image quality and file size for future uploads. This is not a file-siz
 limit and does not guarantee a smaller file; iOS ignores it for PNG and BMP
 images. The form currently stores the image URI and metadata, not image bytes.
 
-The form intentionally uses `mode: 'onChange'` for immediate feedback. Tapping
+The text fields use `mode: 'onBlur'` and `reValidateMode: 'onBlur'`. Each
+`Controller` passes its `onBlur` handler through `TextField` to the native input,
+so validation errors appear when the user leaves a field, rather than on the
+first keystroke. Corrections are checked again on blur, including after submission.
+
+Image changes explicitly trigger image validation for immediate feedback. Tapping
 Remove sets the image to `null` and immediately shows "Please add an image",
 because an event image is required.
 
