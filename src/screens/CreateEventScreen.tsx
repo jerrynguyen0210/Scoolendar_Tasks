@@ -23,7 +23,7 @@ import {
 
 export default function CreateEventScreen() {
   const [imageValid, setImageValid] = useState<boolean | null>(null);
-  const { control, trigger, formState: { isValidating } } = useForm<EventFormInput, unknown, EventFormValues>({
+  const { control, trigger, clearErrors, formState: { isValidating } } = useForm<EventFormInput, unknown, EventFormValues>({
     resolver: zodResolver(eventSchema),
     mode: 'onBlur',
     reValidateMode: 'onBlur',
@@ -125,6 +125,7 @@ export default function CreateEventScreen() {
                 value={value ?? 'public'}
                 onChange={(mode) => {
                   onChange(mode);
+                  clearErrors(['communities', 'invites']);
                   onBlur();
                 }}
                 error={error?.message}

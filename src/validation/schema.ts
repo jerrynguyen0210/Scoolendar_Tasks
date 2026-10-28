@@ -49,7 +49,7 @@ export const eventSchema = z.object({
       ctx.addIssue({
         code: "custom",
         path: ["communities"],
-        message: "Choose at least one community",
+        message: `Choose at least ${MIN_COMMUNITIES} ${MIN_COMMUNITIES === 1 ? "community" : "communities"}`,
       });
     }
     return;

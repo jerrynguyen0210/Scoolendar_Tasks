@@ -64,7 +64,7 @@ messages. Keep this table in sync when changing those constants.
 ### Public communities
 
 Public events require at least one selected community (`MIN_COMMUNITIES`). An
-empty selection reports "Choose at least one community" on `communities`.
+empty selection reports "Choose at least 1 community" on `communities`.
 Private events skip this check, keeping community selections for switching back.
 
 ### Private invites
