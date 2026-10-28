@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
-import { Controller, useForm, useWatch } from 'react-hook-form';
-import { Button, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text } from 'react-native';
+import { Controller, useForm, useWatch, type SubmitErrorHandler } from 'react-hook-form';
+import { Alert, Button, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,6 +12,7 @@ import PrivacyToggle from '../components/PrivacyToggle';
 import TextField from '../components/TextField';
 import { COMMUNITIES, SAVED_EMAILS } from '../data/communities';
 import type { EventFormInput, EventFormValues } from '../types/event';
+import { toPayload } from '../utils/toPayload';
 import {
   eventSchema,
   TITLE_MIN_LENGTH,
@@ -23,8 +24,9 @@ import {
 } from '../validation/schema';
 
 export default function CreateEventScreen() {
-  const [formValid, setFormValid] = useState<boolean | null>(null);
-  const { control, trigger, clearErrors, formState: { isValidating, errors } } = useForm<EventFormInput, unknown, EventFormValues>({
+  const [successMessage, setSuccessMessage] = useState('');
+  const [validationSummary, setValidationSummary] = useState('');
+  const { control, trigger, clearErrors, handleSubmit, reset, formState: { isSubmitting, isValidating, errors } } = useForm<EventFormInput, unknown, EventFormValues>({
     resolver: zodResolver(eventSchema),
     mode: 'onBlur',
     reValidateMode: 'onBlur',
@@ -39,6 +41,20 @@ export default function CreateEventScreen() {
     },
   });
   const privacy = useWatch({ control, name: 'privacy' });
+  const onInvalid: SubmitErrorHandler<EventFormInput> = (fieldErrors) => {
+    const count = Object.keys(fieldErrors).length;
+    const message = `Please fix ${count} ${count === 1 ? 'field' : 'fields'}`;
+    setValidationSummary(message);
+    Alert.alert('Check your event', message, [{ text: 'OK' }]);
+  };
+  const onSubmit = async (values: EventFormValues): Promise<void> => {
+    const payload = toPayload(values);
+    await new Promise<void>((resolve) => setTimeout(resolve, 500));
+    console.log('Event payload:', payload);
+    reset();
+    setSuccessMessage('Event created');
+    Alert.alert('Success', 'Event created successfully', [{ text: 'OK' }]);
+  };
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -60,7 +76,6 @@ export default function CreateEventScreen() {
               <ImageField
                 value={value}
                 onChange={(image) => {
-                  setFormValid(null);
                   onChange(image);
                   void trigger('image');
                 }}
@@ -171,16 +186,19 @@ export default function CreateEventScreen() {
             />
           )}
           <Button
-            title="Validate"
-            accessibilityLabel="Validate event form"
-            disabled={isValidating}
-            onPress={async () => setFormValid(await trigger())}
+            title={isSubmitting ? 'Creating…' : 'Submit'}
+            accessibilityLabel={isSubmitting ? 'Creating event' : 'Submit event'}
+            disabled={isSubmitting || isValidating}
+            onPress={() => {
+              setSuccessMessage('');
+              setValidationSummary('');
+              void handleSubmit(onSubmit, onInvalid)();
+            }}
           />
-          {formValid !== null && (
-            <Text accessibilityLiveRegion="polite">
-              {formValid ? 'Form validation passed.' : 'Form validation failed.'}
-            </Text>
-          )}
+          <Text accessibilityLiveRegion="polite">{successMessage}</Text>
+          <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.error}>
+            {validationSummary}
+          </Text>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -188,6 +206,7 @@ export default function CreateEventScreen() {
 }
 
 const styles = StyleSheet.create({
+  error: { color: '#b00020', fontSize: 14 },
   screen: { flex: 1, backgroundColor: '#fff' },
   scroll: { flex: 1 },
   container: {

@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
-import { eventSchema } from "../src/validation/schema.ts";
+import {
+  eventSchema, MAX_INVITES, TITLE_MIN_LENGTH, TITLE_MAX_LENGTH,
+  SHORT_DESCRIPTION_MIN_LENGTH, SHORT_DESCRIPTION_MAX_LENGTH,
+  LONG_DESCRIPTION_MIN_LENGTH, LONG_DESCRIPTION_MAX_LENGTH,
+} from "../src/validation/schema.ts";
 import { toPayload } from "../src/utils/toPayload.ts";
 import { addInviteEmails } from "../src/utils/addInviteEmails.ts";
 
@@ -169,5 +173,75 @@ assert.equal(limited.emails.length, 20);
 assert.equal(limited.emails[19], "last@example.com");
 assert.match(limited.error, /overflow@example.com \(limit of 20 invites reached\)/);
 assert.equal(addInviteEmails([], " , \n ").error, "Enter a valid email address");
+
+// Text limits apply to trimmed values, including exact boundaries.
+for (const [field, min, max] of [
+  ["title", TITLE_MIN_LENGTH, TITLE_MAX_LENGTH],
+  ["shortDescription", SHORT_DESCRIPTION_MIN_LENGTH, SHORT_DESCRIPTION_MAX_LENGTH],
+  ["longDescription", LONG_DESCRIPTION_MIN_LENGTH, LONG_DESCRIPTION_MAX_LENGTH],
+]) {
+  for (const length of [min, max]) {
+    const result = eventSchema.safeParse({ ...valid, [field]: `  ${"a".repeat(length)}  ` });
+    assert.equal(result.success, true, `${field}: accepts trimmed length ${length}`);
+    assert.equal(result.data[field], "a".repeat(length));
+  }
+  for (const text of ["a".repeat(min - 1), "a".repeat(max + 1), "   "]) {
+    const result = eventSchema.safeParse({ ...valid, [field]: text });
+    assert.equal(result.success, false, `${field}: rejects invalid length`);
+    assert.ok(result.error.issues.some(({ path }) => path[0] === field));
+  }
+}
+
+for (const privacy of [undefined, null, "", "friends"]) {
+  const result = eventSchema.safeParse({ ...valid, privacy });
+  assert.equal(result.success, false);
+  assert.ok(result.error.issues.some(({ path }) => path[0] === "privacy"));
+}
+
+const fullInvites = Array.from({ length: MAX_INVITES }, (_, index) => `person${index}@example.com`);
+assert.equal(eventSchema.safeParse({ ...valid, privacy: "private", invites: fullInvites }).success, true);
+const tooMany = eventSchema.safeParse({
+  ...valid, privacy: "private", invites: [...fullInvites, "extra@example.com"],
+});
+assert.equal(tooMany.success, false);
+assert.ok(tooMany.error.issues.some(({ path, message }) =>
+  path.join(".") === "invites" && message === `Invite at most ${MAX_INVITES} people`));
+assert.equal(eventSchema.safeParse({
+  ...valid, invites: [...fullInvites, "not-an-email"],
+}).success, true, "Public events ignore inactive invite constraints");
+
+const multipleBadEmails = eventSchema.safeParse({
+  ...valid, privacy: "private", invites: ["bad", "valid@example.com", "also-bad"],
+});
+assert.equal(multipleBadEmails.success, false);
+assert.deepEqual(multipleBadEmails.error.issues.map(({ path }) => path), [["invites", 0], ["invites", 2]]);
+
+for (const image of [null, { uri: "file:///document.pdf", mimeType: "application/pdf" }]) {
+  const result = eventSchema.safeParse({ ...valid, image });
+  assert.equal(result.success, false);
+  assert.ok(result.error.issues.some(({ path }) => path[0] === "image"));
+}
+assert.equal(eventSchema.safeParse({ ...valid, image: { uri: "file:///photo.jpg" } }).success, true);
+
+const parsedPublic = eventSchema.parse(valid);
+assert.deepEqual(toPayload(parsedPublic), {
+  image: valid.image, title: valid.title, shortDescription: valid.shortDescription,
+  longDescription: valid.longDescription, privacy: "public", communities: valid.communities,
+});
+const snapshot = structuredClone(paddedEmail.data);
+toPayload(paddedEmail.data);
+assert.deepEqual(paddedEmail.data, snapshot, "Payload conversion preserves form values");
+
+const fullBatch = addInviteEmails(Object.freeze(fullInvites), "extra@example.com");
+assert.deepEqual(fullBatch.emails, fullInvites);
+assert.match(fullBatch.error, /limit of/);
+const mixedSeparators = addInviteEmails([], ";, FIRST@example.com\r\n second@example.com\tthird@example.com ;;,");
+assert.deepEqual(mixedSeparators.emails, ["first@example.com", "second@example.com", "third@example.com"]);
+assert.equal(mixedSeparators.error, null);
+const allRejected = addInviteEmails(existing, "bad; ALEX@example.com");
+assert.deepEqual(allRejected.emails, existing);
+assert.match(allRejected.error, /invalid email/);
+assert.match(allRejected.error, /already invited/);
+assert.equal(addInviteEmails([], "first.last+event@example.com").error, null);
 
 console.log("\nAll validation and payload expectations passed.");

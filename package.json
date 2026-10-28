@@ -23,7 +23,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
-    "test:validation": "node test/scratch-validation.mjs"
+    "test:validation": "node test/scratch-validation.mjs",
+    "test:submit": "node test/submit.mjs"
   },
   "private": true
 }
