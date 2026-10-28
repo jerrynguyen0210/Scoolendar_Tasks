@@ -5,20 +5,9 @@ Supports image selection, public communities, and private email invites.
 
 ## Setup and run
 
-From the repository root on macOS or Linux (Windows: use WSL):
+### Manual setup
 
-```bash
-bash scripts/setup.sh
-```
-
-Setup reuses working Node.js/npm installations, or installs Node.js 22 and a
-compatible npm version through nvm if either is missing or unusable. It then
-installs locked dependencies and runs all checks. Requires Bash,
-internet access, and `curl` when installing nvm. A new nvm installation updates
-your Bash/Zsh profile; open a new terminal to use Node there.
-After logging in, use `bash scripts/setup.sh --start` to also start Expo on future runs.
-
-For manual setup, use Node.js 22.18+ within the 22.x release line:
+With Node.js installed (22.18+ within the 22.x release line), run from the repository root:
 
 ```bash
 npm ci
@@ -32,6 +21,20 @@ code. Alternatively, run `npm run ios` (macOS with Xcode) / `npm run android`
 Install mobile apps and native development tools separately. No `.env` or backend
 configuration is required.
 
+### Fresh-device setup (optional)
+
+On macOS or Linux (Windows: use WSL), the setup script can install Node.js/npm for you:
+
+```bash
+bash scripts/setup.sh
+```
+
+It reuses working Node.js/npm installations or installs Node.js 22 and compatible
+npm through nvm, then installs dependencies and runs all checks. Requires Bash,
+internet access, and `curl` when installing nvm. A new nvm installation updates
+your Bash/Zsh profile; open a new terminal to use Node there, then follow the
+login and start commands above. Add `--start` to also launch Expo after setup.
+
 ## Form rules
 
 | Field | Requirement |
@@ -44,18 +47,70 @@ configuration is required.
 | Public communities | Select at least one community |
 | Private invites | 1–20 valid, unique email addresses |
 
-Text lengths apply after trimming. Text fields validate on first blur, then on
-change. Image changes validate immediately. Rules live in
-[`src/validation/schema.ts`](src/validation/schema.ts).
-
 Invites support saved-email shortcuts and bulk paste separated by commas,
 semicolons, or whitespace. Invalid, duplicate, and excess entries are skipped
 with feedback. Email comparisons ignore case and surrounding whitespace.
 
-Switching privacy preserves both lists, validates only the active list, and
-includes only that list in the payload. Submission normalizes invite emails,
+Submission normalizes invite emails,
 simulates a 500 ms request, logs the payload, shows success, and resets the form.
 The submit button is disabled during validation and submission.
+
+Permission denial shows “Allow photo access to add an image”, with an **Open Settings** button when permission cannot be requested again; picker failures show a retry message.
+
+## Decisions
+
+- **Stack:** Expo with TypeScript for straightforward native setup and typed code;
+  React Hook Form with Zod for form state and centralized schema validation.
+- **Navigation/UI:** No navigation library for a single screen; plain React Native
+  components without a UI kit keep dependencies and styling simple.
+- **Privacy:** Starts unselected to require an explicit choice. Both lists are
+  preserved when switching; only the active list is validated and sent.
+- **Communities:** Public events require at least one selected community so they
+  have an audience; private events do not require communities.
+- **Validation:** First blur, then change, to avoid premature errors while giving
+  immediate correction feedback. Image changes validate immediately.
+- **Images:** Request compression at `quality: 0.8` to balance quality and size;
+  this does not enforce a file-size limit.
+- **Lengths:** After trimming, title 3–80, short description 10–200, and long
+  description 20–2000 characters balance useful detail with concise input.
+  Limits live in [`src/validation/schema.ts`](src/validation/schema.ts).
+
+## Payload examples
+
+Public events include `communities` and omit `invites`:
+
+```json
+{
+  "image": { "uri": "file:///photo.jpg" },
+  "title": "Park picnic",
+  "shortDescription": "Join our picnic.",
+  "longDescription": "Bring a blanket and lunch to the park.",
+  "privacy": "public",
+  "communities": ["nature-explorers"]
+}
+```
+
+Private events include normalized `invites` and omit `communities`:
+
+```json
+{
+  "image": { "uri": "file:///photo.jpg" },
+  "title": "Park picnic",
+  "shortDescription": "Join our picnic.",
+  "longDescription": "Bring a blanket and lunch to the park.",
+  "privacy": "private",
+  "invites": ["guest@example.com"]
+}
+```
+
+## Project structure
+
+- `src/components/` — Form fields, image picker, privacy toggle, and audience selectors.
+- `src/data/` — Mock communities and saved email addresses.
+- `src/screens/` — Create-event screen and form submission flow.
+- `src/types/` — Shared event, form, and payload types.
+- `src/utils/` — Invite-email processing and payload conversion.
+- `src/validation/` — Zod schemas and validation limits.
 
 ## Checks
 
