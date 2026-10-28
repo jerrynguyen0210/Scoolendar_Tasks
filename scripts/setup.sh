@@ -6,7 +6,7 @@ usage() {
   cat <<'EOF'
 Usage: bash scripts/setup.sh [--start] [--help]
 
-Install a compatible Node.js/npm if needed, install locked dependencies,
+Install a compatible Node.js and npm if either is missing or unusable, install locked dependencies,
 and run the project's checks. --start also starts the Expo development server.
 Requires Bash, curl (only for Node installation), and internet access.
 EOF
@@ -34,6 +34,7 @@ trap 'printf "Setup failed at line %s. Fix the error above and rerun this script
 # Match Expo/React Native engines and the native TypeScript support in our tests.
 compatible_node() {
   command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1 &&
+    npm --version >/dev/null 2>&1 &&
     node -e '
       const [major, minor] = process.versions.node.split(".").map(Number);
       process.exit((major === 22 && minor >= 18) ||
@@ -48,7 +49,7 @@ if ! compatible_node; then
       printf 'Install curl with your OS package manager, then rerun this script.\n' >&2
       exit 1
     fi
-    printf 'Installing nvm and Node.js 22 for the current user (no sudo required)...\n'
+    printf 'Installing nvm, Node.js 22, and npm for the current user (no sudo required)...\n'
     installer="$(mktemp)"
     trap 'rm -f -- "$installer"' EXIT
     # Pin the installer; use its script method so Git is not a prerequisite.
@@ -74,7 +75,9 @@ if ! compatible_node; then
   # nvm is a shell function and does not support nounset in every version.
   set +u
   . "$NVM_DIR/nvm.sh" --no-use
-  nvm install 22
+  # Node includes npm; explicitly request the latest npm compatible with Node 22.
+  printf 'Installing Node.js 22 with a compatible npm version...\n'
+  nvm install --latest-npm 22
   nvm use 22
   set -u
 fi

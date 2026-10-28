@@ -8,24 +8,27 @@ Supports image selection, public communities, and private email invites.
 From the repository root on macOS or Linux (Windows: use WSL):
 
 ```bash
-bash scripts/setup.sh --start
+bash scripts/setup.sh
 ```
 
-Setup reuses a compatible Node.js/npm installation or installs Node.js 22 through
-nvm, installs locked dependencies, runs all checks, and starts Expo. Requires Bash,
+Setup reuses working Node.js/npm installations, or installs Node.js 22 and a
+compatible npm version through nvm if either is missing or unusable. It then
+installs locked dependencies and runs all checks. Requires Bash,
 internet access, and `curl` when installing nvm. A new nvm installation updates
 your Bash/Zsh profile; open a new terminal to use Node there.
-Omit `--start` to install and check without starting Expo.
+After logging in, use `bash scripts/setup.sh --start` to also start Expo on future runs.
 
 For manual setup, use Node.js 22.18+ within the 22.x release line:
 
 ```bash
 npm ci
+npx expo login
 npm start
 ```
 
-Scan the QR code with a compatible Expo Go app, or run `npm run ios` (macOS with
-Xcode) / `npm run android` (configured Android emulator or connected device).
+Log in to your Expo account in a compatible Expo Go app before scanning the QR
+code. Alternatively, run `npm run ios` (macOS with Xcode) / `npm run android`
+(configured Android emulator or connected device).
 Install mobile apps and native development tools separately. No `.env` or backend
 configuration is required.
 
