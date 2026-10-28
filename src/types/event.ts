@@ -1,7 +1,7 @@
 import type { z } from "zod";
-import type { eventSchema, imageSchema } from "../validation/schema";
+import type { eventSchema, imageSchema, privacySchema } from "../validation/schema";
 
-export type Privacy = "public" | "private";
+export type Privacy = z.infer<typeof privacySchema>;
 
 export type EventImage = z.infer<typeof imageSchema>;
 

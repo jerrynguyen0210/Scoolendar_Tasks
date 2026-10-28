@@ -17,7 +17,7 @@ export const imageSchema = z.object({
   fileName: z.string().nullable().optional(),
 });
 
-const privacySchema = z.enum(["public", "private"], {
+export const privacySchema = z.enum(["public", "private"], {
   error: "Choose public or private",
 });
 
