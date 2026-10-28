@@ -67,16 +67,19 @@ export default function ImageField({ value, onChange, error }: ImageFieldProps) 
             resizeMode="cover"
             accessibilityLabel="Selected event image"
           />
-          <Button title="Change" accessibilityLabel="Change event image" onPress={pickImage} />
-          <Button
-            title="Remove"
-            accessibilityLabel="Remove event image"
-            onPress={() => {
-              setPickerError(null);
-              setShowSettings(false);
-              onChange(null);
-            }}
-          />
+          <View style={styles.actions}>
+            <Button title="Change" accessibilityLabel="Change event image" onPress={pickImage} />
+            <View style={styles.actionDivider} accessible={false} />
+            <Button
+              title="Remove"
+              accessibilityLabel="Remove event image"
+              onPress={() => {
+                setPickerError(null);
+                setShowSettings(false);
+                onChange(null);
+              }}
+            />
+          </View>
         </>
       ) : (
         <View style={styles.placeholder}>
@@ -99,6 +102,8 @@ export default function ImageField({ value, onChange, error }: ImageFieldProps) 
 
 const styles = StyleSheet.create({
   container: { alignSelf: 'stretch', gap: 8 },
+  actions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 },
+  actionDivider: { width: 1, height: 24, backgroundColor: '#767676' },
   preview: { width: '100%', aspectRatio: 16 / 9, borderRadius: 8 },
   placeholder: {
     width: '100%',
