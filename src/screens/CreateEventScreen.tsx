@@ -1,15 +1,16 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import { Button, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Button, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import CommunityPicker from '../components/CommunityPicker';
 import ImageField from '../components/ImageField';
+import InviteList from '../components/InviteList';
 import PrivacyToggle from '../components/PrivacyToggle';
 import TextField from '../components/TextField';
-import { COMMUNITIES } from '../data/communities';
+import { COMMUNITIES, SAVED_EMAILS } from '../data/communities';
 import type { EventFormInput, EventFormValues } from '../types/event';
 import {
   eventSchema,
@@ -22,8 +23,8 @@ import {
 } from '../validation/schema';
 
 export default function CreateEventScreen() {
-  const [imageValid, setImageValid] = useState<boolean | null>(null);
-  const { control, trigger, clearErrors, formState: { isValidating } } = useForm<EventFormInput, unknown, EventFormValues>({
+  const [formValid, setFormValid] = useState<boolean | null>(null);
+  const { control, trigger, clearErrors, formState: { isValidating, errors } } = useForm<EventFormInput, unknown, EventFormValues>({
     resolver: zodResolver(eventSchema),
     mode: 'onBlur',
     reValidateMode: 'onBlur',
@@ -59,7 +60,7 @@ export default function CreateEventScreen() {
               <ImageField
                 value={value}
                 onChange={(image) => {
-                  setImageValid(null);
+                  setFormValid(null);
                   onChange(image);
                   void trigger('image');
                 }}
@@ -149,17 +150,35 @@ export default function CreateEventScreen() {
               )}
             />
           ) : (
-            <View key="invites" testID="invites-placeholder" />
+            <Controller
+              control={control}
+              name="invites"
+              render={({ field: { value, onChange, onBlur }, fieldState: { error } }) => (
+                <InviteList
+                  value={value}
+                  savedEmails={SAVED_EMAILS}
+                  onChange={(invites) => {
+                    onChange(invites);
+                    onBlur();
+                  }}
+                  error={error?.message}
+                  itemErrors={Object.fromEntries(value.flatMap((_, index) => {
+                    const message = errors.invites?.[index]?.message;
+                    return message ? [[index, message]] : [];
+                  }))}
+                />
+              )}
+            />
           )}
           <Button
             title="Validate"
-            accessibilityLabel="Validate event image"
+            accessibilityLabel="Validate event form"
             disabled={isValidating}
-            onPress={async () => setImageValid(await trigger('image'))}
+            onPress={async () => setFormValid(await trigger())}
           />
-          {imageValid !== null && (
+          {formValid !== null && (
             <Text accessibilityLiveRegion="polite">
-              {imageValid ? 'Image validation passed.' : 'Image validation failed.'}
+              {formValid ? 'Form validation passed.' : 'Form validation failed.'}
             </Text>
           )}
         </ScrollView>

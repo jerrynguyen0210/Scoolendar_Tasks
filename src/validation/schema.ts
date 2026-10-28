@@ -10,7 +10,7 @@ export const MIN_COMMUNITIES = 1;
 export const MIN_INVITES = 1;
 export const MAX_INVITES = 20;
 
-const emailSchema = z.email();
+export const emailSchema = z.email();
 
 export const imageSchema = z.object({
   uri: z.string().min(1, "Image URI is required"),

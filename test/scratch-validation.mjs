@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { eventSchema } from "../src/validation/schema.ts";
 import { toPayload } from "../src/utils/toPayload.ts";
+import { addInviteEmails } from "../src/utils/addInviteEmails.ts";
 
 const valid = {
   image: { uri: "file:///photo.jpg", mimeType: "image/jpeg" },
@@ -140,5 +141,29 @@ const emptyUri = check("Image with an empty URI", {
 assert.equal(emptyUri.success, false);
 assert.deepEqual(emptyUri.error.issues[0].path, ["image", "uri"]);
 assert.equal(emptyUri.error.issues[0].message, "Image URI is required");
+
+const existing = Object.freeze(["alex@example.com"]);
+const single = addInviteEmails(existing, "  SAM@Example.COM  ");
+assert.deepEqual(single.emails, ["alex@example.com", "sam@example.com"]);
+assert.equal(single.error, null);
+const badSingle = addInviteEmails(existing, "not-an-email");
+assert.deepEqual(badSingle.emails, existing);
+assert.match(badSingle.error, /invalid email/);
+const duplicateSingle = addInviteEmails(existing, " ALEX@EXAMPLE.COM ");
+assert.deepEqual(duplicateSingle.emails, existing);
+assert.match(duplicateSingle.error, /already invited/);
+const batch = addInviteEmails(existing,
+  " NEW@Example.com, invalid alex@example.com\nother@example.com new@example.com ");
+assert.deepEqual(batch.emails, ["alex@example.com", "new@example.com", "other@example.com"]);
+assert.match(batch.error, /invalid \(invalid email\)/);
+assert.match(batch.error, /alex@example.com \(already invited\)/);
+assert.match(batch.error, /new@example.com \(already invited\)/);
+assert.deepEqual(existing, ["alex@example.com"]);
+const nearlyFull = Array.from({ length: 19 }, (_, index) => `guest${index}@example.com`);
+const limited = addInviteEmails(nearlyFull, "last@example.com overflow@example.com");
+assert.equal(limited.emails.length, 20);
+assert.equal(limited.emails[19], "last@example.com");
+assert.match(limited.error, /overflow@example.com \(limit of 20 invites reached\)/);
+assert.equal(addInviteEmails([], " , \n ").error, "Enter a valid email address");
 
 console.log("\nAll validation and payload expectations passed.");
