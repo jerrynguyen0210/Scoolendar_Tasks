@@ -72,4 +72,22 @@ await publicForm.handleSubmit((values) => {
   assert.equal(Object.hasOwn(payload, 'invites'), false);
 }, () => assert.fail('Inactive invalid invites must not block public submission'))();
 
+for (const privacy of [undefined, 'public', 'private']) {
+  await form({ image: null, title: '', shortDescription: '', longDescription: '',
+    privacy, communities: [], invites: [] }).handleSubmit(
+    () => assert.fail('Empty form must not submit'),
+    (errors) => {
+      assert.deepEqual(Object.keys(errors).sort(), [
+        'image', 'title', 'shortDescription', 'longDescription',
+        privacy === undefined ? 'privacy' : privacy === 'public' ? 'communities' : 'invites',
+      ].sort(), `Empty ${privacy} form reports all five fields`);
+    },
+  )();
+}
+
+const fresh = form({ ...valid, privacy: undefined, communities: [], invites: [] });
+fresh.reset({ ...valid, privacy: 'private' });
+fresh.reset({ ...valid, privacy: undefined, communities: [], invites: [] });
+assert.equal(fresh.getValues('privacy'), undefined, 'Reset can clear the selected privacy');
+
 console.log('All submit lifecycle expectations passed.');

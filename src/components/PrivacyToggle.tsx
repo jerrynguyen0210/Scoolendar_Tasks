@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Privacy } from '../types/event';
 
 export type PrivacyToggleProps = {
-  value: Privacy;
+  value: Privacy | undefined;
   onChange: (value: Privacy) => void;
   error?: string;
 };
@@ -35,11 +35,13 @@ export default function PrivacyToggle({ value, onChange, error }: PrivacyToggleP
           );
         })}
       </View>
-      <Text style={styles.helper}>
-        {value === 'public'
-          ? 'Shared with the selected communities.'
-          : 'Invite only.'}
-      </Text>
+      {value !== undefined && (
+        <Text style={styles.helper}>
+          {value === 'public'
+            ? 'Shared with the selected communities.'
+            : 'Invite only.'}
+        </Text>
+      )}
       {!!error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
     </View>
   );

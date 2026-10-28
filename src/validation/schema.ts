@@ -23,12 +23,8 @@ export const privacySchema = z.enum(["public", "private"], {
 });
 
 export const eventSchema = z.object({
-  image: imageSchema.nullable().transform((image, ctx) => {
-    if (image === null) {
-      ctx.addIssue({ code: "custom", message: "Please add an image" });
-      return z.NEVER;
-    }
-    return image;
+  image: imageSchema.nullable().refine((image) => image !== null, {
+    message: "Please add an image",
   }),
   title: z.string().trim()
     .min(TITLE_MIN_LENGTH, `Title must be at least ${TITLE_MIN_LENGTH} characters`)
@@ -92,4 +88,4 @@ export const eventSchema = z.object({
     }
     seenEmails.add(normalizedEmail);
   });
-});
+}).transform((values) => ({ ...values, image: values.image! }));

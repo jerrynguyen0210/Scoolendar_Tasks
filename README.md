@@ -123,7 +123,8 @@ users do not lose their work. `toPayload` includes only communities for public
 events or invites for private events; the inactive side is omitted from the
 payload without clearing it from the form.
 Switching privacy clears errors for both lists; later validation checks the
-active list again. Public is the default. Community IDs are not currently checked
+active list again. Privacy starts unselected and must be chosen before submitting.
+Neither list is shown until a privacy mode is selected. Community IDs are not currently checked
 against the mock options list.
 
 ## Submission
@@ -140,7 +141,7 @@ submitting. Invalid submissions show an inline "Please fix N fields" summary
 and field errors.
 After success, a popup says "Event created successfully", the screen announces
 "Event created", and `reset()` restores all
-default values, including Public privacy and empty community and invite lists.
+default values, including unselected privacy and empty community and invite lists.
 This starts a fresh event and avoids accidentally submitting the same event again.
 Switching privacy before submission still preserves both lists as described above.
 

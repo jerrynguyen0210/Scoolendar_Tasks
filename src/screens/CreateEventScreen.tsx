@@ -35,12 +35,16 @@ export default function CreateEventScreen() {
       title: '',
       shortDescription: '',
       longDescription: '',
-      privacy: 'public',
+      privacy: undefined,
       communities: [],
       invites: [],
     },
   });
   const privacy = useWatch({ control, name: 'privacy' });
+  const formValues = useWatch({ control });
+  useEffect(() => {
+    setValidationSummary('');
+  }, [formValues]);
   useEffect(() => {
     if (isDirty) setSuccessMessage('');
   }, [isDirty]);
@@ -140,7 +144,7 @@ export default function CreateEventScreen() {
             name="privacy"
             render={({ field: { value, onChange, onBlur }, fieldState: { error } }) => (
               <PrivacyToggle
-                value={value ?? 'public'}
+                value={value}
                 onChange={(mode) => {
                   onChange(mode);
                   clearErrors(['communities', 'invites']);
@@ -166,7 +170,7 @@ export default function CreateEventScreen() {
                 />
               )}
             />
-          ) : (
+          ) : privacy === 'private' ? (
             <Controller
               control={control}
               name="invites"
@@ -186,7 +190,7 @@ export default function CreateEventScreen() {
                 />
               )}
             />
-          )}
+          ) : null}
           <Button
             title={isSubmitting ? 'Creating…' : 'Submit'}
             accessibilityLabel={isSubmitting ? 'Creating event' : 'Submit event'}
