@@ -143,6 +143,10 @@ assert.deepEqual(emptyUri.error.issues[0].path, ["image", "uri"]);
 assert.equal(emptyUri.error.issues[0].message, "Image URI is required");
 
 const existing = Object.freeze(["alex@example.com"]);
+const outlookBatch = addInviteEmails([], " Alex@Example.com;sam@example.com; taylor@example.com; ");
+assert.deepEqual(outlookBatch.emails,
+  ["alex@example.com", "sam@example.com", "taylor@example.com"]);
+assert.equal(outlookBatch.error, null);
 const single = addInviteEmails(existing, "  SAM@Example.COM  ");
 assert.deepEqual(single.emails, ["alex@example.com", "sam@example.com"]);
 assert.equal(single.error, null);

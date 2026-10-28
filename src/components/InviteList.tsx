@@ -73,7 +73,7 @@ export default function InviteList({ value, onChange, error, itemErrors, savedEm
         </>
       )}
       {value.map((email, index) => (
-        <View key={`${index}:${email}`}>
+        <View key={email}>
           <View style={styles.row}>
             <Text style={styles.email}>{email}</Text>
             <Button

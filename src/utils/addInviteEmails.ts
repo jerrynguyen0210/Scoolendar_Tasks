@@ -4,7 +4,7 @@ export function addInviteEmails(value: readonly string[], input: string) {
   const emails = [...value];
   const seen = new Set(value.map((email) => email.trim().toLowerCase()));
   const skipped: string[] = [];
-  const candidates = input.trim().split(/[,\s]+/).filter(Boolean);
+  const candidates = input.trim().split(/[,;\s]+/).filter(Boolean);
 
   for (const candidate of candidates) {
     const email = candidate.toLowerCase();

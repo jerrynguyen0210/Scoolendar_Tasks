@@ -45,6 +45,10 @@ files directly. Node.js 22.6–22.17 requires the experimental flag instead:
 node --experimental-strip-types test/scratch-validation.mjs
 ```
 
+`addInviteEmails.ts` intentionally imports `schema.ts` with its extension so the
+Node validation script can resolve it without a bundler; `allowImportingTsExtensions`
+in `tsconfig.json` permits this import during the no-emit TypeScript check.
+
 The script prints validation results, asserts the expected behavior, and exits
 with a nonzero status if an expectation fails. A printed `FAIL` means that sample
 was rejected by the schema; expected rejections are successful test cases.
