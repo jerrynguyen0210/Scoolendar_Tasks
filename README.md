@@ -74,6 +74,14 @@ lowercase addresses. Each repeated entry gets an error at its own list index.
 `InviteList` is currently a placeholder; duplicate blocking when adding an email
 can be added when its UI is implemented.
 
+## Privacy switching
+
+Switching between Public and Private keeps all form values, including selected
+communities and invite emails. Switching back restores the previous entries so
+users do not lose their work. `toPayload` includes only communities for public
+events or invites for private events; the inactive side is omitted from the
+payload without clearing it from the form.
+
 ## Keyboard handling
 
 The form uses `KeyboardAvoidingView` and a `ScrollView` without custom input

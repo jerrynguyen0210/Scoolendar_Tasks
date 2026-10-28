@@ -1,11 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { Button, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text } from 'react-native';
+import { Controller, useForm, useWatch } from 'react-hook-form';
+import { Button, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ImageField from '../components/ImageField';
+import PrivacyToggle from '../components/PrivacyToggle';
 import TextField from '../components/TextField';
 import type { EventFormInput, EventFormValues } from '../types/event';
 import {
@@ -29,10 +30,12 @@ export default function CreateEventScreen() {
       title: '',
       shortDescription: '',
       longDescription: '',
+      privacy: 'public',
       communities: [],
       invites: [],
     },
   });
+  const privacy = useWatch({ control, name: 'privacy' });
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -112,6 +115,25 @@ export default function CreateEventScreen() {
               />
             )}
           />
+          <Controller
+            control={control}
+            name="privacy"
+            render={({ field: { value, onChange, onBlur }, fieldState: { error } }) => (
+              <PrivacyToggle
+                value={value ?? 'public'}
+                onChange={(mode) => {
+                  onChange(mode);
+                  onBlur();
+                }}
+                error={error?.message}
+              />
+            )}
+          />
+          {privacy === 'public' ? (
+            <View key="communities" testID="communities-placeholder" />
+          ) : (
+            <View key="invites" testID="invites-placeholder" />
+          )}
           <Button
             title="Validate"
             accessibilityLabel="Validate event image"
