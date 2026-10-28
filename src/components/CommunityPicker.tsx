@@ -12,7 +12,7 @@ export type CommunityPickerProps = {
 export default function CommunityPicker({ value, onChange, error, options }: CommunityPickerProps) {
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Communities</Text>
+      <Text style={styles.label}>Communities (optional)</Text>
       {options.map((community) => {
         const checked = value.includes(community.id);
         return (
@@ -38,7 +38,7 @@ export default function CommunityPicker({ value, onChange, error, options }: Com
         );
       })}
       <Text style={styles.count} accessibilityLiveRegion="polite">
-        {value.length} selected
+        {value.length === 0 ? 'None selected: visible to everyone' : `${value.length} selected`}
       </Text>
       {!!error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
     </View>

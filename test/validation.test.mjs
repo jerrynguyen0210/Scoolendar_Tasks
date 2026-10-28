@@ -47,9 +47,7 @@ const noCommunities = check("Public with no communities", {
   ...valid,
   communities: [],
 });
-assert.equal(noCommunities.success, false);
-assert.deepEqual(noCommunities.error.issues[0].path, ["communities"]);
-assert.equal(noCommunities.error.issues[0].message, "Choose at least 1 community");
+assert.equal(noCommunities.success, true);
 
 const privateWithoutCommunities = check("Private with no communities", {
   ...valid,

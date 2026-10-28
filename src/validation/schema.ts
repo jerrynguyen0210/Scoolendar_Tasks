@@ -6,7 +6,6 @@ export const SHORT_DESCRIPTION_MIN_LENGTH = 10;
 export const SHORT_DESCRIPTION_MAX_LENGTH = 200;
 export const LONG_DESCRIPTION_MIN_LENGTH = 20;
 export const LONG_DESCRIPTION_MAX_LENGTH = 2000;
-export const MIN_COMMUNITIES = 1;
 export const MIN_INVITES = 1;
 export const MAX_INVITES = 20;
 
@@ -41,13 +40,6 @@ export const eventSchema = z.object({
   invites: z.array(z.string()),
 }).superRefine((values, ctx) => {
   if (values.privacy === "public") {
-    if (values.communities.length < MIN_COMMUNITIES) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["communities"],
-        message: `Choose at least ${MIN_COMMUNITIES} ${MIN_COMMUNITIES === 1 ? "community" : "communities"}`,
-      });
-    }
     return;
   }
 

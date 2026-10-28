@@ -11,12 +11,12 @@ With Node.js installed (22.18+ within the 22.x release line), run from the repos
 
 ```bash
 npm ci
-npx expo login
 npm start
 ```
 
-Log in to your Expo account in a compatible Expo Go app before scanning the QR
-code. Alternatively, run `npm run ios` (macOS with Xcode) / `npm run android`
+Scan the QR code with Expo Go (SDK 58) on the same network. An Expo account is
+optional for local development; run `npx expo login` only if your setup asks
+for it. Alternatively, run `npm run ios` (macOS with Xcode) / `npm run android`
 (configured Android emulator or connected device).
 Install mobile apps and native development tools separately. No `.env` or backend
 configuration is required.
@@ -32,8 +32,7 @@ bash scripts/setup.sh
 It reuses working Node.js/npm installations or installs Node.js 22 and compatible
 npm through nvm, then installs dependencies and runs all checks. Requires Bash,
 internet access, and `curl` when installing nvm. A new nvm installation updates
-your Bash/Zsh profile; open a new terminal to use Node there, then follow the
-login and start commands above. Add `--start` to also launch Expo after setup.
+your Bash/Zsh profile; open a new terminal to use Node there, then run `npm start`. Add `--start` to also launch Expo after setup.
 
 ## Form rules
 
@@ -44,7 +43,7 @@ login and start commands above. Add `--start` to also launch Expo after setup.
 | Short description | 10–200 characters; printable ASCII and line breaks only |
 | Long description | 20–2000 characters |
 | Privacy | Select Public or Private |
-| Public communities | Select at least one community |
+| Public communities | Optional; none selected means visible to everyone |
 | Private invites | 1–20 valid, unique email addresses |
 
 Invites support saved-email shortcuts and bulk paste separated by commas,
@@ -65,8 +64,9 @@ Permission denial shows “Allow photo access to add an image”, with an **Open
   components without a UI kit keep dependencies and styling simple.
 - **Privacy:** Starts unselected to require an explicit choice. Both lists are
   preserved when switching; only the active list is validated and sent.
-- **Communities:** Public events require at least one selected community so they
-  have an audience; private events do not require communities.
+- **Communities:** Optional for public events. Selecting none means the event is
+  visible to everyone; selecting some targets those communities. Private events
+  hide communities and leave them out of the payload.
 - **Validation:** First blur, then change, to avoid premature errors while giving
   immediate correction feedback. Image changes validate immediately.
 - **Images:** Request compression at `quality: 0.8` to balance quality and size;
@@ -77,11 +77,11 @@ Permission denial shows “Allow photo access to add an image”, with an **Open
 
 ## Payload examples
 
-Public events include `communities` and omit `invites`:
+Public events include `communities` (an empty array means visible to everyone) and omit `invites`:
 
 ```json
 {
-  "image": { "uri": "file:///photo.jpg" },
+  "image": { "uri": "file:///photo.jpg", "mimeType": "image/jpeg", "fileName": "photo.jpg" },
   "title": "Park picnic",
   "shortDescription": "Join our picnic.",
   "longDescription": "Bring a blanket and lunch to the park.",
@@ -94,7 +94,7 @@ Private events include normalized `invites` and omit `communities`:
 
 ```json
 {
-  "image": { "uri": "file:///photo.jpg" },
+  "image": { "uri": "file:///photo.jpg", "mimeType": "image/jpeg", "fileName": "photo.jpg" },
   "title": "Park picnic",
   "shortDescription": "Join our picnic.",
   "longDescription": "Bring a blanket and lunch to the park.",
@@ -123,6 +123,12 @@ npm run test:submit
 Tests cover schema boundaries, privacy rules, email additions, payload conversion,
 and submission callbacks/state. Nonzero exit status indicates failure; the
 validation suite also prints `FAIL` for intentionally rejected samples.
+
+## Tested on
+
+- Device: TODO (model, iOS/Android version)
+- Expo Go: TODO (version)
+- Node.js: TODO (version)
 
 ## Limitations
 

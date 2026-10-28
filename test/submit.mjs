@@ -50,7 +50,6 @@ unsubscribe();
 
 for (const [label, values, expectedField] of [
   ['Private with no invites', { ...valid, invites: [] }, 'invites'],
-  ['Public with no communities', { ...valid, privacy: 'public', communities: [] }, 'communities'],
   ['Invalid email', { ...valid, invites: ['bad-email'] }, 'invites'],
   ['Missing image', { ...valid, image: null }, 'image'],
 ]) {
@@ -65,12 +64,17 @@ for (const [label, values, expectedField] of [
   assert.equal(invalidCalled, true, `${label}: calls onInvalid`);
 }
 
-const publicForm = form({ ...valid, privacy: 'public', invites: ['bad-email'] });
-await publicForm.handleSubmit((values) => {
-  const payload = toPayload(values);
-  assert.deepEqual(payload.communities, ['nature-explorers']);
-  assert.equal(Object.hasOwn(payload, 'invites'), false);
-}, () => assert.fail('Inactive invalid invites must not block public submission'))();
+for (const communities of [[], ['nature-explorers']]) {
+  const publicForm = form({ ...valid, privacy: 'public', communities, invites: ['bad-email'] });
+  let publicSubmitted = false;
+  await publicForm.handleSubmit((values) => {
+    publicSubmitted = true;
+    const payload = toPayload(values);
+    assert.deepEqual(payload.communities, communities);
+    assert.equal(Object.hasOwn(payload, 'invites'), false);
+  }, () => assert.fail('Inactive invalid invites must not block public submission'))();
+  assert.equal(publicSubmitted, true, 'Public events submit with or without communities');
+}
 
 for (const privacy of [undefined, 'public', 'private']) {
   await form({ image: null, title: '', shortDescription: '', longDescription: '',
@@ -79,8 +83,8 @@ for (const privacy of [undefined, 'public', 'private']) {
     (errors) => {
       assert.deepEqual(Object.keys(errors).sort(), [
         'image', 'title', 'shortDescription', 'longDescription',
-        privacy === undefined ? 'privacy' : privacy === 'public' ? 'communities' : 'invites',
-      ].sort(), `Empty ${privacy} form reports all five fields`);
+        ...(privacy === undefined ? ['privacy'] : privacy === 'private' ? ['invites'] : []),
+      ].sort(), `Empty ${privacy} form reports ${privacy === 'public' ? 4 : 5} fields`);
     },
   )();
 }
