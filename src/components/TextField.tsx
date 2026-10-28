@@ -1,4 +1,3 @@
-import { type ComponentRef, useRef } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 export type TextFieldProps = {
@@ -6,7 +5,6 @@ export type TextFieldProps = {
   value: string;
   onChange: (value: string) => void;
   onBlur: () => void;
-  onFocus?: (input: ComponentRef<typeof TextInput>) => void;
   error?: string;
   maxLength?: number;
   multiline?: boolean;
@@ -15,21 +13,15 @@ export type TextFieldProps = {
 };
 
 export default function TextField({
-  label, value, onChange, onBlur, onFocus, error, maxLength,
+  label, value, onChange, onBlur, error, maxLength,
   multiline = false, placeholder, helperText,
 }: TextFieldProps) {
-  const inputRef = useRef<ComponentRef<typeof TextInput>>(null);
-
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
-        ref={inputRef}
-        onFocus={() => {
-          if (inputRef.current) onFocus?.(inputRef.current);
-        }}
         accessibilityLabel={label}
-        accessibilityHint={error || helperText}
+        accessibilityHint={helperText}
         value={value}
         onChangeText={onChange}
         onBlur={onBlur}

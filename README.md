@@ -73,3 +73,11 @@ Private invite duplicates are rejected in `superRefine`, comparing trimmed,
 lowercase addresses. Each repeated entry gets an error at its own list index.
 `InviteList` is currently a placeholder; duplicate blocking when adding an email
 can be added when its UI is implemented.
+
+## Keyboard handling
+
+The form uses `KeyboardAvoidingView` and a `ScrollView` without custom input
+measurement or manual scrolling. Automatic iOS keyboard insets stay disabled
+to avoid applying keyboard spacing twice. Dragging the outer form dismisses the
+keyboard. Device verification is still needed for switching fields and scrolling
+inside a long multiline description.
