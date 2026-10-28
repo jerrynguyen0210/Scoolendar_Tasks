@@ -4,7 +4,8 @@ An Expo/React Native event form using React Hook Form and Zod.
 
 ## Run the app
 
-From `create-event-form/`, install dependencies and start Metro:
+From the repository root (the directory containing `package.json`), install
+dependencies and start Metro:
 
 ```bash
 npm ci
@@ -70,7 +71,7 @@ TypeScript type stripping enabled by default), because it imports `.ts` source
 files directly. Node.js 22.6–22.17 requires the experimental flag instead:
 
 ```bash
-node --experimental-strip-types test/scratch-validation.mjs
+node --experimental-strip-types test/validation.test.mjs
 ```
 
 `addInviteEmails.ts` intentionally imports `schema.ts` with its extension so the
@@ -135,7 +136,8 @@ still need simulator/device verification.
 
 Submission simulates a 500 ms network request and logs the `toPayload` result.
 The button is disabled during validation/submission and shows "Creating…" while
-submitting. Invalid submissions show a "Please fix N fields" summary and popup.
+submitting. Invalid submissions show an inline "Please fix N fields" summary
+and field errors.
 After success, a popup says "Event created successfully", the screen announces
 "Event created", and `reset()` restores all
 default values, including Public privacy and empty community and invite lists.

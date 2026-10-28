@@ -3,6 +3,10 @@
 # dependencies
 node_modules/
 
+# local coding-agent instructions and settings
+/AGENTS.md
+/.claude/
+
 # Expo
 .expo/
 dist/

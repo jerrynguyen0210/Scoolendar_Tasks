@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm, useWatch, type SubmitErrorHandler } from 'react-hook-form';
 import { Alert, Button, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text } from 'react-native';
 
@@ -26,7 +26,7 @@ import {
 export default function CreateEventScreen() {
   const [successMessage, setSuccessMessage] = useState('');
   const [validationSummary, setValidationSummary] = useState('');
-  const { control, trigger, clearErrors, handleSubmit, reset, formState: { isSubmitting, isValidating, errors } } = useForm<EventFormInput, unknown, EventFormValues>({
+  const { control, trigger, clearErrors, handleSubmit, reset, formState: { isSubmitting, isValidating, isDirty, errors } } = useForm<EventFormInput, unknown, EventFormValues>({
     resolver: zodResolver(eventSchema),
     mode: 'onBlur',
     reValidateMode: 'onBlur',
@@ -41,11 +41,13 @@ export default function CreateEventScreen() {
     },
   });
   const privacy = useWatch({ control, name: 'privacy' });
+  useEffect(() => {
+    if (isDirty) setSuccessMessage('');
+  }, [isDirty]);
   const onInvalid: SubmitErrorHandler<EventFormInput> = (fieldErrors) => {
     const count = Object.keys(fieldErrors).length;
     const message = `Please fix ${count} ${count === 1 ? 'field' : 'fields'}`;
     setValidationSummary(message);
-    Alert.alert('Check your event', message, [{ text: 'OK' }]);
   };
   const onSubmit = async (values: EventFormValues): Promise<void> => {
     const payload = toPayload(values);
@@ -195,10 +197,14 @@ export default function CreateEventScreen() {
               void handleSubmit(onSubmit, onInvalid)();
             }}
           />
-          <Text accessibilityLiveRegion="polite">{successMessage}</Text>
-          <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.error}>
-            {validationSummary}
-          </Text>
+          {!!successMessage && (
+            <Text accessibilityLiveRegion="polite">{successMessage}</Text>
+          )}
+          {!!validationSummary && (
+            <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.error}>
+              {validationSummary}
+            </Text>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
