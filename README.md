@@ -61,6 +61,12 @@ messages. Keep this table in sync when changing those constants.
 | `shortDescription` | 10 | 200 | `SHORT_DESCRIPTION_MIN_LENGTH`, `SHORT_DESCRIPTION_MAX_LENGTH` |
 | `longDescription` | 20 | 2000 | `LONG_DESCRIPTION_MIN_LENGTH`, `LONG_DESCRIPTION_MAX_LENGTH` |
 
+### Public communities
+
+Public events require at least one selected community (`MIN_COMMUNITIES`). An
+empty selection reports "Choose at least one community" on `communities`.
+Private events skip this check, keeping community selections for switching back.
+
 ### Private invites
 
 Private events require 1–20 invites (`MIN_INVITES` and `MAX_INVITES`). Each

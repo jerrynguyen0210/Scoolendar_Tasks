@@ -5,9 +5,11 @@ import { Button, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, V
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import CommunityPicker from '../components/CommunityPicker';
 import ImageField from '../components/ImageField';
 import PrivacyToggle from '../components/PrivacyToggle';
 import TextField from '../components/TextField';
+import { COMMUNITIES } from '../data/communities';
 import type { EventFormInput, EventFormValues } from '../types/event';
 import {
   eventSchema,
@@ -130,7 +132,21 @@ export default function CreateEventScreen() {
             )}
           />
           {privacy === 'public' ? (
-            <View key="communities" testID="communities-placeholder" />
+            <Controller
+              control={control}
+              name="communities"
+              render={({ field: { value, onChange, onBlur }, fieldState: { error } }) => (
+                <CommunityPicker
+                  value={value}
+                  options={COMMUNITIES}
+                  onChange={(communities) => {
+                    onChange(communities);
+                    onBlur();
+                  }}
+                  error={error?.message}
+                />
+              )}
+            />
           ) : (
             <View key="invites" testID="invites-placeholder" />
           )}

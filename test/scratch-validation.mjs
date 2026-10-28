@@ -8,7 +8,7 @@ const valid = {
   shortDescription: "Join our community picnic.",
   longDescription: "Bring your family for a picnic in the local park.",
   privacy: "public",
-  communities: [],
+  communities: ["nature-explorers"],
   invites: [],
 };
 
@@ -37,6 +37,23 @@ assert.equal(empty.success, false);
 assert.equal(empty.error.issues.length, 5);
 assert.deepEqual(empty.error.issues.map(({ path }) => path[0]).sort(),
   ["image", "title", "shortDescription", "longDescription", "privacy"].sort());
+
+const noCommunities = check("Public with no communities", {
+  ...valid,
+  communities: [],
+});
+assert.equal(noCommunities.success, false);
+assert.deepEqual(noCommunities.error.issues[0].path, ["communities"]);
+assert.equal(noCommunities.error.issues[0].message, "Choose at least one community");
+
+const privateWithoutCommunities = check("Private with no communities", {
+  ...valid,
+  privacy: "private",
+  communities: [],
+  invites: ["guest@example.com"],
+});
+assert.equal(privateWithoutCommunities.success, true);
+assert.equal(Object.hasOwn(toPayload(privateWithoutCommunities.data), "communities"), false);
 
 const publicEvent = check("Public with leftover bad invite", {
   ...valid,
