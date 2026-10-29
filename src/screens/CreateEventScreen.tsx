@@ -155,6 +155,7 @@ export default function CreateEventScreen() {
             render={({ field: { value, onChange, onBlur }, fieldState: { error } }) => (
               <TextField
                 label="Short description"
+                boxHeight={120}
                 value={value}
                 onChange={onChange}
                 onBlur={onBlur}

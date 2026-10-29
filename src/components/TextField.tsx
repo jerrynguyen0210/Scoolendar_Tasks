@@ -10,18 +10,19 @@ export type TextFieldProps = {
   error?: string;
   maxLength?: number;
   multiline?: boolean;
+  boxHeight?: number;
   placeholder?: string;
   helperText?: string;
 };
 
 export default function TextField({
   label, value, onChange, onBlur, onFocus, onEditingLayoutChange, error, maxLength,
-  multiline = false, placeholder, helperText,
+  multiline = false, boxHeight = 160, placeholder, helperText,
 }: TextFieldProps) {
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
-      <View style={[styles.inputBox, error ? styles.invalid : undefined]}>
+      <View style={[styles.inputBox, multiline && { height: boxHeight }, error ? styles.invalid : undefined]}>
         <TextInput
           accessibilityLabel={label}
           accessibilityHint={helperText}
@@ -68,7 +69,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 10, fontSize: 16,
     color: '#222', backgroundColor: '#fff',
   },
-  multiline: { height: 120 },
+  multiline: { flex: 1 },
   invalid: { borderColor: '#b00020' },
   counter: { alignSelf: 'flex-end', paddingHorizontal: 12, paddingBottom: 10, color: '#555', fontSize: 14 },
   helper: { color: '#555', fontSize: 14 },
