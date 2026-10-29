@@ -124,11 +124,35 @@ Tests cover schema boundaries, privacy rules, email additions, payload conversio
 and submission callbacks/state. Nonzero exit status indicates failure; the
 validation suite also prints `FAIL` for intentionally rejected samples.
 
+### Manual device / integration testing
+
+Use [Create-Event-Form-Device-Tests-Result.xlsx](test/Create-Event-Form-Device-Tests-Result.xlsx)
+to run and record manual integration tests on a device or simulator. The workbook
+covers setup, image permissions, field validation, privacy switching, communities,
+invites, submission, keyboard/layout behaviour, and accessibility. It is a manual
+test checklist and results log; the npm test commands do not execute its cases or
+update the workbook. Submission uses the app's simulated request.
+
+1. Run the checks above, then `npm start` and open the app in Expo Go.
+2. Open the workbook in Excel. In **Summary**, fill in the test-run details:
+   tester, device, OS, Expo Go and Node.js versions, commit SHA/tag, and test date.
+3. In **Test Cases**, follow each row's **Preconditions** and **Steps**, then
+   compare the app's behaviour with **Expected result**. Keep the Metro console
+   available for cases that inspect the submitted payload.
+4. Record **Actual result**, **Device/OS**, **Tested on**, and any **Notes / bug link**.
+   Set **Status** to `Pass`, `Fail`, `Blocked`, `Not run`, or `N/A`; explain blocked
+   or non-applicable cases in the notes. Leave untested cases as `Not run`.
+5. Record failures in **Bugs**, including the linked test ID, reproduction steps,
+   severity, and status. After a fix, record the fix commit and rerun the case.
+6. Review **Summary**, whose formulas calculate status counts and pass rates,
+   and save the workbook. Check remaining `Not run` and `Blocked` cases before
+   treating the test run as complete.
+
 ## Tested on
 
-- Device: TODO (model, iOS/Android version)
-- Expo Go: TODO (version)
-- Node.js: TODO (version)
+- Device: IOS simulator - Iphone 16 pro / physical device iphone 13
+- Expo Go: 58.1.15
+- Node.js: v26.12.1
 
 ## Limitations
 
